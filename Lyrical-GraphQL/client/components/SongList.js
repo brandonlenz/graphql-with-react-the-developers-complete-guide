@@ -1,16 +1,31 @@
 import React, { Fragment } from "react";
-import gql from 'graphql-tag';
 import { graphql } from 'react-apollo';
 import { Link } from 'react-router'
 
+import getSongs from "../queries/getSongs"
+import deleteSong from "../queries/deleteSong";
+
 const SongList = (props) => {
+
+  const onSongDelete = (id) => {
+    props.mutate({
+      variables: {
+       id
+      }
+    }).then(() => props.data.refetch());
+  }
 
   const renderSongs = (songs) => {
     return (
       <ul className="collection">
-        {songs.map(song => (
-          <li key={song.id} className="collection-item">
-            {song.title}
+        {songs.map(({ id, title }) => (
+          <li key={id} className="collection-item">
+            {title}
+            <i 
+              className="material-icons"
+              onClick={() => onSongDelete(id)}>
+              delete
+            </i>
           </li>
         ))}
       </ul>
@@ -33,13 +48,6 @@ const SongList = (props) => {
   )
 }
 
-const songNamesQuery = gql`
-  {
-    songs {
-      id
-      title
-    }
-  }
-`;
-
-export default graphql(songNamesQuery)(SongList);
+export default graphql(deleteSong)(
+  graphql(getSongs)(SongList)
+);
