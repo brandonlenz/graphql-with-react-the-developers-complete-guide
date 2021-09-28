@@ -1,19 +1,39 @@
+import { optimistic } from "apollo-client/optimistic-data/store";
 import React from "react";
+import { graphql } from "react-apollo";
+
+import likeLyric from "../queries/likeLyric";
 
 const LyricList = (props) => {
 
-  const onLike = (lyricId) => {
-    console.log(lyricId);
+  const onLike = (lyricId, likes) => {
+    props.mutate({
+      variables: { id: lyricId },
+      optimisticResponse: {
+        _typename: 'Mutation',
+        likeLyric: {
+          id: lyricId,
+          _typename: 'LyricType',
+          likes: likes + 1
+        }
+      }
+    })
   }
 
-  const renderLyrics = () => props.lyrics.map(({ id, content }) => <li key={id} className="collection-item">
-    {content}
-    <i 
-      className="material-icons"
-      onClick={() => onLike(id)}>
-      thumb_up
-    </i>
-  </li>);
+  const renderLyrics = () => props.lyrics.map(({ id, content, likes }) => (
+    <li key={id} className="collection-item">
+      {content}
+      <div className="vote-box">
+        {likes}
+        &nbsp;
+        <i 
+          className="material-icons"
+          onClick={() => onLike(id, likes)}>
+          thumb_up
+        </i>
+      </div>
+    </li>
+  ));
   
   return (
     <ul className="collection">
@@ -22,4 +42,4 @@ const LyricList = (props) => {
   )
 };
 
-export default LyricList;
+export default graphql(likeLyric)(LyricList);
